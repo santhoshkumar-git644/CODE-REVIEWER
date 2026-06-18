@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Code Review & Risk Analyzer</title>
+    <meta name="description" content="AI-Powered Code Review Tool for predicting bugs and security vulnerabilities.">
+    <link rel="stylesheet" href="styles.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="glass-header">
+            <div class="logo-area">
+                <i class="fa-solid fa-shield-halved logo-icon"></i>
+                <h1>DeepReview AI</h1>
+            </div>
+            <div class="header-controls">
+                <button id="theme-toggle" class="icon-btn" title="Toggle Theme">
+                    <i class="fa-solid fa-moon"></i>
+                </button>
+                <a href="/docs" class="btn btn-outline" target="_blank">API Docs</a>
+            </div>
+        </header>
+
+        <!-- Main Content Grid -->
+        <main class="main-grid">
+            
+            <!-- Left Panel: Code Input -->
+            <section class="editor-section glass-panel">
+                <div class="panel-header">
+                    <h2><i class="fa-solid fa-code"></i> Source Code</h2>
+                    <div class="controls">
+                        <select id="language-select" class="custom-select">
+                            <option value="python">Python</option>
+                            <option value="c">C / C++</option>
+                            <option value="java">Java</option>
+                            <option value="javascript">JavaScript</option>
+                        </select>
+                        <button id="clear-btn" class="icon-btn" title="Clear Code"><i class="fa-solid fa-trash-can"></i></button>
+                    </div>
+                </div>
+                
+                <div class="editor-container">
+                    <textarea id="code-input" spellcheck="false" placeholder="Paste your code here...&#10;&#10;def calculate_risk(data):&#10;    result = eval(data) # Vulnerability!&#10;    for i in range(100):&#10;        for j in range(100):&#10;            result += i * j&#10;    return result"></textarea>
+                    <!-- Line numbers overlay would go here in a real implementation -->
+                </div>
+
+                <div class="panel-footer">
+                    <button id="analyze-btn" class="btn btn-primary pulse-btn">
+                        <i class="fa-solid fa-wand-magic-sparkles"></i> Analyze Code
+                    </button>
+                </div>
+            </section>
+
+            <!-- Right Panel: Results -->
+            <section class="results-section glass-panel">
+                <div class="panel-header">
+                    <h2><i class="fa-solid fa-chart-pie"></i> Analysis Results</h2>
+                </div>
+                
+                <!-- Loading State -->
+                <div id="loading-state" class="state-container hidden">
+                    <div class="spinner"></div>
+                    <p>AI is analyzing your code...</p>
+                    <div class="loading-steps">
+                        <span class="step active">Parsing AST...</span>
+                        <span class="step">Computing Complexity...</span>
+                        <span class="step">Scanning Security...</span>
+                        <span class="step">Running CodeBERT...</span>
+                    </div>
+                </div>
+
+                <!-- Empty State -->
+                <div id="empty-state" class="state-container">
+                    <i class="fa-regular fa-file-code empty-icon"></i>
+                    <p>Paste some code and click Analyze to see the results.</p>
+                </div>
+
+                <!-- Results Content -->
+                <div id="results-content" class="results-content hidden">
+                    
+                    <!-- Top Row: Risk Gauge & Metrics -->
+                    <div class="results-top-row">
+                        <div class="risk-card glass-card">
+                            <h3>Bug Probability</h3>
+                            <div class="gauge-container">
+                                <svg class="gauge" viewBox="0 0 100 50">
+                                    <path class="gauge-bg" d="M 10 50 A 40 40 0 0 1 90 50" fill="none" stroke-width="12" stroke-linecap="round"/>
+                                    <path id="gauge-fill" class="gauge-value" d="M 10 50 A 40 40 0 0 1 90 50" fill="none" stroke-width="12" stroke-linecap="round" stroke-dasharray="125.6" stroke-dashoffset="125.6"/>
+                                </svg>
+                                <div class="gauge-text">
+                                    <span id="prob-value">0%</span>
+                                </div>
+                            </div>
+                            <div id="risk-badge" class="badge badge-low">LOW RISK</div>
+                        </div>
+
+                        <div class="metrics-card glass-card">
+                            <h3>Code Metrics</h3>
+                            <div class="metrics-grid">
+                                <div class="metric-item">
+                                    <span class="metric-label">Complexity</span>
+                                    <span id="metric-cc" class="metric-value">0</span>
+                                </div>
+                                <div class="metric-item">
+                                    <span class="metric-label">Max Depth</span>
+                                    <span id="metric-depth" class="metric-value">0</span>
+                                </div>
+                                <div class="metric-item">
+                                    <span class="metric-label">Functions</span>
+                                    <span id="metric-funcs" class="metric-value">0</span>
+                                </div>
+                                <div class="metric-item">
+                                    <span class="metric-label">Total Lines</span>
+                                    <span id="metric-lines" class="metric-value">0</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Security Issues -->
+                    <div class="issues-container mt-4">
+                        <h3><i class="fa-solid fa-shield-virus"></i> Security Findings <span id="issues-count" class="count-badge">0</span></h3>
+                        <div id="security-list" class="issue-list">
+                            <!-- Populated by JS -->
+                        </div>
+                    </div>
+
+                    <!-- Complexity Breakdown -->
+                    <div class="complexity-container mt-4">
+                        <h3><i class="fa-solid fa-stopwatch"></i> Time Complexity</h3>
+                        <div id="complexity-list" class="complexity-list">
+                            <!-- Populated by JS -->
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+    <script src="app.js"></script>
+</body>
+</html>
